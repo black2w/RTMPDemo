@@ -1,0 +1,17 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+use_frameworks!
+platform :ios, '13.0'
+
+
+#定义相同的依赖库
+def commonPods
+    pod 'LFLiveKit', :path => '.'
+end
+
+
+target 'RTMPDemo' do
+  commonPods
+end
+
+
