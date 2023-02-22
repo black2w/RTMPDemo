@@ -821,19 +821,21 @@ body{ box-sizing: border-box;
 <blockquote>
 <p>关键代码</p>
 </blockquote>
-<p>设备的初始化和Session的创建具体百度<br />
-在delagate中,samplebuffer为音视频数据（CMSampleBufferRef为苹果的一种音频/视频数据格式）<br />
--(void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection{<br />
-if (captureOutput == audioOutput){<br />
-//sampleBuffer中保存的数据是PCM格式的音频帧。<br />
-[self processAudioSampleBuffer:sampleBuffer];<br />
-} else {<br />
-//sampleBuffer中中保存的数据是yuv420格式的视频帧(视频输出设置中将输出格式设为：kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)。<br />
-[self processVideoSampleBuffer:sampleBuffer];<br />
-}<br />
-}</p>
-<p>//CMSampleBufferRef-&gt;yuv<br />
-//CMSampleBufferRef-&gt;pcm</p>
+<pre><code class="language-plain_text">设备的初始化和Session的创建具体百度
+在delagate中,samplebuffer为音视频数据（CMSampleBufferRef为苹果的一种音频/视频数据格式）
+-(void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection{
+    if (captureOutput == audioOutput){
+    //sampleBuffer中保存的数据是PCM格式的音频帧。
+        [self processAudioSampleBuffer:sampleBuffer];
+    } else {
+        //sampleBuffer中中保存的数据是yuv420格式的视频帧(视频输出设置中将输出格式设为：kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)。
+         [self processVideoSampleBuffer:sampleBuffer];
+    }
+}
+</code></pre>
+<pre><code class="language-plain_text">//CMSampleBufferRef-&gt;yuv
+//CMSampleBufferRef-&gt;pcm
+</code></pre>
 <blockquote>
 </blockquote>
 <h1><a id="%E9%9F%B3%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>音视频编码</h1>
@@ -845,83 +847,89 @@ if (captureOutput == audioOutput){<br />
 <blockquote>
 <p>主要代码</p>
 </blockquote>
-<ul>
-<li>
-<p>(BOOL)createAudioConvert { //根据输入样本初始化一个编码转换器<br />
-if (m_converter != nil) {<br />
-return TRUE;<br />
-}</p>
-<p>AudioStreamBasicDescription inputFormat = {0};<br />
-inputFormat.mSampleRate = _configuration.audioSampleRate;<br />
-inputFormat.mFormatID = kAudioFormatLinearPCM;<br />
-inputFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;<br />
-inputFormat.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;<br />
-inputFormat.mFramesPerPacket = 1;<br />
-inputFormat.mBitsPerChannel = 16;<br />
-inputFormat.mBytesPerFrame = inputFormat.mBitsPerChannel / 8 * inputFormat.mChannelsPerFrame;<br />
-inputFormat.mBytesPerPacket = inputFormat.mBytesPerFrame * inputFormat.mFramesPerPacket;</p>
-<p>AudioStreamBasicDescription outputFormat; // 这里开始是输出音频格式<br />
-memset(&amp;outputFormat, 0, sizeof(outputFormat));<br />
-outputFormat.mSampleRate = inputFormat.mSampleRate;       // 采样率保持一致<br />
-outputFormat.mFormatID = kAudioFormatMPEG4AAC;            // AAC编码 kAudioFormatMPEG4AAC kAudioFormatMPEG4AAC_HE_V2<br />
-outputFormat.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;;<br />
-outputFormat.mFramesPerPacket = 1024;                     // AAC一帧是1024个字节</p>
-<p>const OSType subtype = kAudioFormatMPEG4AAC;<br />
-AudioClassDescription requestedCodecs[2] = {<br />
-{<br />
-kAudioEncoderComponentType,<br />
-subtype,<br />
-kAppleSoftwareAudioCodecManufacturer<br />
-},<br />
-{<br />
-kAudioEncoderComponentType,<br />
-subtype,<br />
-kAppleHardwareAudioCodecManufacturer<br />
-}<br />
-};</p>
-<p>OSStatus result = AudioConverterNewSpecific(&amp;inputFormat, &amp;outputFormat, 2, requestedCodecs, &amp;m_converter);;<br />
-UInt32 outputBitrate = _configuration.audioBitrate;<br />
-UInt32 propSize = sizeof(outputBitrate);</p>
-<p>if(result == noErr) {<br />
-result = AudioConverterSetProperty(m_converter, kAudioConverterEncodeBitRate, propSize, &amp;outputBitrate);<br />
-}</p>
-<p>return YES;<br />
-}</p>
-</li>
-<li>
-<p>(void)encodeAudioData:(nullable NSData*)audioData timeStamp:(uint64_t)timeStamp {<br />
-if (![self createAudioConvert]) {<br />
-return;<br />
-}</p>
-<p>if(leftLength + audioData.length &gt;= self.configuration.bufferLength){<br />
-///&lt;  发送<br />
-NSInteger totalSize = leftLength + audioData.length;<br />
-NSInteger encodeCount = totalSize/self.configuration.bufferLength;<br />
-char *totalBuf = malloc(totalSize);<br />
-char *p = totalBuf;</p>
-<pre><code class="language-plain_text">  memset(totalBuf, (int)totalSize, 0);
-  memcpy(totalBuf, leftBuf, leftLength);
-  memcpy(totalBuf + leftLength, audioData.bytes, audioData.length);
-  
-  for(NSInteger index = 0;index &lt; encodeCount;index++){
-      [self encodeBuffer:p  timeStamp:timeStamp];
-      p += self.configuration.bufferLength;
-  }
-  
-  leftLength = totalSize%self.configuration.bufferLength;
-  memset(leftBuf, 0, self.configuration.bufferLength);
-  memcpy(leftBuf, totalBuf + (totalSize -leftLength), leftLength);
-  
-  free(totalBuf);
+<pre><code class="language-plain_text">- (BOOL)createAudioConvert { //根据输入样本初始化一个编码转换器
+    if (m_converter != nil) {
+        return TRUE;
+    }
+    
+    AudioStreamBasicDescription inputFormat = {0};
+    inputFormat.mSampleRate = _configuration.audioSampleRate;
+    inputFormat.mFormatID = kAudioFormatLinearPCM;
+    inputFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked;
+    inputFormat.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;
+    inputFormat.mFramesPerPacket = 1;
+    inputFormat.mBitsPerChannel = 16;
+    inputFormat.mBytesPerFrame = inputFormat.mBitsPerChannel / 8 * inputFormat.mChannelsPerFrame;
+    inputFormat.mBytesPerPacket = inputFormat.mBytesPerFrame * inputFormat.mFramesPerPacket;
+    
+    AudioStreamBasicDescription outputFormat; // 这里开始是输出音频格式
+    memset(&amp;outputFormat, 0, sizeof(outputFormat));
+    outputFormat.mSampleRate = inputFormat.mSampleRate;       // 采样率保持一致
+    outputFormat.mFormatID = kAudioFormatMPEG4AAC;            // AAC编码 kAudioFormatMPEG4AAC kAudioFormatMPEG4AAC_HE_V2
+    outputFormat.mChannelsPerFrame = (UInt32)_configuration.numberOfChannels;;
+    outputFormat.mFramesPerPacket = 1024;                     // AAC一帧是1024个字节
+    
+    const OSType subtype = kAudioFormatMPEG4AAC;
+    AudioClassDescription requestedCodecs[2] = {
+        {
+            kAudioEncoderComponentType,
+            subtype,
+            kAppleSoftwareAudioCodecManufacturer
+        },
+        {
+            kAudioEncoderComponentType,
+            subtype,
+            kAppleHardwareAudioCodecManufacturer
+        }
+    };
+    
+    OSStatus result = AudioConverterNewSpecific(&amp;inputFormat, &amp;outputFormat, 2, requestedCodecs, &amp;m_converter);;
+    UInt32 outputBitrate = _configuration.audioBitrate;
+    UInt32 propSize = sizeof(outputBitrate);
+    
+    
+    if(result == noErr) {
+        result = AudioConverterSetProperty(m_converter, kAudioConverterEncodeBitRate, propSize, &amp;outputBitrate);
+    }
+    
+    return YES;
+}
+
+    
+- (void)encodeAudioData:(nullable NSData*)audioData timeStamp:(uint64_t)timeStamp {
+    if (![self createAudioConvert]) {
+        return;
+    }
+    
+    if(leftLength + audioData.length &gt;= self.configuration.bufferLength){
+        ///&lt;  发送
+        NSInteger totalSize = leftLength + audioData.length;
+        NSInteger encodeCount = totalSize/self.configuration.bufferLength;
+        char *totalBuf = malloc(totalSize);
+        char *p = totalBuf;
+        
+        memset(totalBuf, (int)totalSize, 0);
+        memcpy(totalBuf, leftBuf, leftLength);
+        memcpy(totalBuf + leftLength, audioData.bytes, audioData.length);
+        
+        for(NSInteger index = 0;index &lt; encodeCount;index++){
+            [self encodeBuffer:p  timeStamp:timeStamp];
+            p += self.configuration.bufferLength;
+        }
+        
+        leftLength = totalSize%self.configuration.bufferLength;
+        memset(leftBuf, 0, self.configuration.bufferLength);
+        memcpy(leftBuf, totalBuf + (totalSize -leftLength), leftLength);
+        
+        free(totalBuf);
+        
+    }else{
+        ///&lt; 积累
+        memcpy(leftBuf+leftLength, audioData.bytes, audioData.length);
+        leftLength = leftLength + audioData.length;
+    }
+}
 </code></pre>
-<p>}else{<br />
-///&lt; 积累<br />
-memcpy(leftBuf+leftLength, audioData.bytes, audioData.length);<br />
-leftLength = leftLength + audioData.length;<br />
-}<br />
-}</p>
-</li>
-</ul>
 <h2><a id="%E8%A7%86%E9%A2%91%E7%A1%AC%E7%BC%96%E7%A0%81" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>视频硬编码</h2>
 <pre><code class="language-plain_text">      主要流程：
     1、打开编码器
@@ -930,35 +938,35 @@ leftLength = leftLength + audioData.length;<br />
 <blockquote>
 <p>主要代码</p>
 </blockquote>
-<ul>
-<li>
-<p>(void)resetCompressionSession {<br />
-if (compressionSession) {<br />
-VTCompressionSessionCompleteFrames(compressionSession, kCMTimeInvalid);</p>
-<pre><code class="language-plain_text">  VTCompressionSessionInvalidate(compressionSession);
-  CFRelease(compressionSession);
-  compressionSession = NULL;
+<pre><code class="language-plain_text">- (void)resetCompressionSession {
+    if (compressionSession) {
+        VTCompressionSessionCompleteFrames(compressionSession, kCMTimeInvalid);
+
+        VTCompressionSessionInvalidate(compressionSession);
+        CFRelease(compressionSession);
+        compressionSession = NULL;
+    }
+
+    OSStatus status = VTCompressionSessionCreate(NULL, _configuration.videoSize.width, _configuration.videoSize.height, kCMVideoCodecType_H264, NULL, NULL, NULL, VideoCompressonOutputCallback, (__bridge void *)self, &amp;compressionSession);
+    if (status != noErr) {
+        return;
+    }
+
+    _currentVideoBitRate = _configuration.videoBitRate;
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_MaxKeyFrameInterval, (__bridge CFTypeRef)@(_configuration.videoMaxKeyframeInterval));
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration, (__bridge CFTypeRef)@(_configuration.videoMaxKeyframeInterval/_configuration.videoFrameRate));
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_ExpectedFrameRate, (__bridge CFTypeRef)@(_configuration.videoFrameRate));
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_AverageBitRate, (__bridge CFTypeRef)@(_configuration.videoBitRate));
+    NSArray *limit = @[@(_configuration.videoBitRate * 1.5/8), @(1)];
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_DataRateLimits, (__bridge CFArrayRef)limit);
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_RealTime, kCFBooleanTrue);
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_Main_AutoLevel);
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_AllowFrameReordering, kCFBooleanFalse);
+    VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_H264EntropyMode, kVTH264EntropyMode_CABAC);
+    VTCompressionSessionPrepareToEncodeFrames(compressionSession);
+
+}
 </code></pre>
-<p>}</p>
-<p>OSStatus status = VTCompressionSessionCreate(NULL, _configuration.videoSize.width, _configuration.videoSize.height, kCMVideoCodecType_H264, NULL, NULL, NULL, VideoCompressonOutputCallback, (__bridge void *)self, &amp;compressionSession);<br />
-if (status != noErr) {<br />
-return;<br />
-}</p>
-<p>_currentVideoBitRate = _configuration.videoBitRate;<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_MaxKeyFrameInterval, (__bridge CFTypeRef)@(_configuration.videoMaxKeyframeInterval));<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration, (__bridge CFTypeRef)@(_configuration.videoMaxKeyframeInterval/_configuration.videoFrameRate));<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_ExpectedFrameRate, (__bridge CFTypeRef)@(_configuration.videoFrameRate));<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_AverageBitRate, (__bridge CFTypeRef)@(_configuration.videoBitRate));<br />
-NSArray *limit = @[@(_configuration.videoBitRate * 1.5/8), @(1)];<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_DataRateLimits, (__bridge CFArrayRef)limit);<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_RealTime, kCFBooleanTrue);<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_Main_AutoLevel);<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_AllowFrameReordering, kCFBooleanFalse);<br />
-VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_H264EntropyMode, kVTH264EntropyMode_CABAC);<br />
-VTCompressionSessionPrepareToEncodeFrames(compressionSession);</p>
-</li>
-</ul>
-<p>}</p>
 <h2><a id="2%E8%BD%AF%E7%BC%96" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. 软编</h2>
 <h3><a id="%E8%A7%86%E9%A2%91%E8%BD%AF%E7%BC%96%E7%A0%81" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>- 视频软编码</h3>
 <pre><code class="language-plain_text">  主要流程：
