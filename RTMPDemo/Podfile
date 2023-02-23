@@ -6,7 +6,9 @@ platform :ios, '13.0'
 
 #定义相同的依赖库
 def commonPods
-    pod 'LFLiveKit', :path => '.'
+#    pod 'LFLiveKit', :path => '.'
+  pod 'IQKeyboardManager'
+  pod 'SnapKit'
 end
 
 

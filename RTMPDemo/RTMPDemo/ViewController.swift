@@ -6,11 +6,12 @@
 //
 
 import UIKit
-import LFLiveKit
+//import LFLiveKit
 
 class ViewController: UIViewController {
     
     @IBOutlet weak var stateLabel: UILabel!
+    @IBOutlet weak var cameraSwitchButton: UIButton!
     @IBOutlet weak var startLiveButton: UIButton!
     @IBOutlet weak var urlTxtFld: UITextField!
     
@@ -18,7 +19,12 @@ class ViewController: UIViewController {
     //  默认分辨率368 ＊ 640  音频：44.1 iphone6以上48  双声道  方向竖屏
     var session: LFLiveSession = {
         let audioConfiguration = LFLiveAudioConfiguration.defaultConfiguration(for: LFLiveAudioQuality.high)
-        let videoConfiguration = LFLiveVideoConfiguration.defaultConfiguration(for: LFLiveVideoQuality.low3)
+        let videoConfiguration = LFLiveVideoConfiguration.defaultConfiguration(for: LFLiveVideoQuality.low1)
+        if UIDevice.current.isIpad {
+//            videoConfiguration?.outputImageOrientation = .landscapeLeft
+        }
+        
+        
         let session = LFLiveSession(audioConfiguration: audioConfiguration, videoConfiguration: videoConfiguration)
         return session!
     }()
@@ -33,8 +39,10 @@ class ViewController: UIViewController {
         stateLabel.textColor = UIColor.white
         stateLabel.font = UIFont.systemFont(ofSize: 14)
         
-        startLiveButton.setTitleColor(UIColor.black, for:UIControl.State.normal)
+        startLiveButton.setTitleColor(UIColor.red, for:UIControl.State.normal)
+        startLiveButton.setTitleColor(UIColor.red, for:UIControl.State.selected)
         startLiveButton.setTitle("开始直播", for: UIControl.State.normal)
+        startLiveButton.setTitle("结束直播", for: UIControl.State.selected)
         startLiveButton.titleLabel!.font = UIFont.systemFont(ofSize: 14)
         
         
@@ -44,7 +52,10 @@ class ViewController: UIViewController {
         self.requestAccessForVideo()
         self.requestAccessForAudio()
         self.view.backgroundColor = UIColor.clear
+        
     }
+    
+
 
     
     // 开始直播
@@ -61,6 +72,27 @@ class ViewController: UIViewController {
         }
     }
 
+    
+    @objc @IBAction func didTapChangeCameraButton(_ button: UIButton) -> Void {
+        let devicePositon = session.captureDevicePosition
+        session.captureDevicePosition = (devicePositon == AVCaptureDevice.Position.back) ? AVCaptureDevice.Position.front : AVCaptureDevice.Position.back
+    }
+    
+    override var shouldAutorotate: Bool {
+        get {
+            return true
+        }
+    }
+    
+    
+    func orientationDidChange(notifaication: Notification) {
+        let deviceOriengation = (UIApplication.shared.windows.first?.windowScene?.interfaceOrientation)!
+        if deviceOriengation == .landscapeLeft || deviceOriengation == .landscapeRight {
+            print("1234")
+        } else {
+            print("1234")
+        }
+    }
 }
 
 extension ViewController: LFLiveSessionDelegate {

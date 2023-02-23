@@ -1,16 +1,20 @@
 PODS:
-  - LFLiveKit (2.6)
+  - IQKeyboardManager (6.5.10)
+  - SnapKit (5.6.0)
 
 DEPENDENCIES:
-  - LFLiveKit (from `.`)
+  - IQKeyboardManager
+  - SnapKit
 
-EXTERNAL SOURCES:
-  LFLiveKit:
-    :path: "."
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - IQKeyboardManager
+    - SnapKit
 
 SPEC CHECKSUMS:
-  LFLiveKit: 2219563721f8aa0f188effc3395a06e2d53b23f2
+  IQKeyboardManager: 45a1fa55c1a5b02c61ac0fd7fd5b62bb4ad20d97
+  SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
 
-PODFILE CHECKSUM: 3403f21e9da28972cbb10eb123fc79137af86bf1
+PODFILE CHECKSUM: da77cd3f645aec807d3ac879ea863f73006c2319
 
 COCOAPODS: 1.11.3
