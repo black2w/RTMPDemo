@@ -617,6 +617,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     CVImageBufferRef cameraFrame = CMSampleBufferGetImageBuffer(sampleBuffer);
     int bufferWidth = (int) CVPixelBufferGetWidth(cameraFrame);
     int bufferHeight = (int) CVPixelBufferGetHeight(cameraFrame);
+    NSLog(@"wwwwwwwwwwwwww w = %d, h = %d", bufferWidth, bufferHeight);
     CFTypeRef colorAttachments = CVBufferGetAttachment(cameraFrame, kCVImageBufferYCbCrMatrixKey, NULL);
     if (colorAttachments != NULL)
     {
@@ -870,6 +871,8 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
+    NSLog(@"wwww get a frame %ld", (long)connection.videoOrientation);
+    
     if (!self.captureSession.isRunning)
     {
         return;
@@ -1033,6 +1036,8 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
             }
         }
         
+        
+        
         for (id<GPUImageInput> currentTarget in targets)
         {
             NSInteger indexOfObject = [targets indexOfObject:currentTarget];
@@ -1045,6 +1050,15 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 {
     _outputImageOrientation = newValue;
     [self updateOrientationSendToTargets];
+    
+//    for (AVCaptureConnection *connection in videoOutput.connections)
+//    {
+//        if (newValue == UIInterfaceOrientationPortrait || newValue == UIInterfaceOrientationPortrait) {
+//            [connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+//        } else {
+//            [connection setVideoOrientation:AVCaptureVideoOrientationLandscapeLeft];
+//        }
+//    }
 }
 
 - (void)setHorizontallyMirrorFrontFacingCamera:(BOOL)newValue

@@ -1,20 +1,24 @@
 PODS:
   - IQKeyboardManager (6.5.10)
   - SnapKit (5.6.0)
+  - SVProgressHUD (2.2.5)
 
 DEPENDENCIES:
   - IQKeyboardManager
   - SnapKit
+  - SVProgressHUD
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
     - IQKeyboardManager
     - SnapKit
+    - SVProgressHUD
 
 SPEC CHECKSUMS:
   IQKeyboardManager: 45a1fa55c1a5b02c61ac0fd7fd5b62bb4ad20d97
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
 
-PODFILE CHECKSUM: da77cd3f645aec807d3ac879ea863f73006c2319
+PODFILE CHECKSUM: 77e7a31e4deee9dd3e73a94c942a3bc4d6a8e314
 
 COCOAPODS: 1.11.3

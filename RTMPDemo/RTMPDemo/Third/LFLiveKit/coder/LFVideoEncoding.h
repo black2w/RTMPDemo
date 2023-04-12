@@ -15,6 +15,9 @@
 @protocol LFVideoEncodingDelegate <NSObject>
 @required
 - (void)videoEncoder:(nullable id<LFVideoEncoding>)encoder videoFrame:(nullable LFVideoFrame *)frame;
+
+//add by black2w
+- (void)videoEncoder:(nullable id<LFVideoEncoding>)encoder videoHeaderFrame:(nullable LFVideoFrame *)frame;
 @end
 
 /// 编码器抽象的接口
@@ -26,5 +29,7 @@
 - (nullable instancetype)initWithVideoStreamConfiguration:(nullable LFLiveVideoConfiguration *)configuration;
 - (void)setDelegate:(nullable id<LFVideoEncodingDelegate>)delegate;
 - (void)stopEncoder;
+
+- (void)resetEncoder;//add by blac2w
 @end
 

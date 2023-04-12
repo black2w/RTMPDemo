@@ -171,6 +171,18 @@ SAVC(mp4a);
             // 调用发送接口
             LFFrame *frame = [_self.buffer popFirstObject];
             if ([frame isKindOfClass:[LFVideoFrame class]]) {
+//                LFVideoFrame *f = (LFVideoFrame *)frame;
+//                if (f.isKeyFrame) {
+//                    _self.sendVideoHead = YES;
+//                    if(!((LFVideoFrame*)frame).sps || !((LFVideoFrame*)frame).pps){
+//                        _self.isSending = NO;
+//                        return;
+//                    }
+//                    [_self sendVideoHeader:(LFVideoFrame *)frame];
+//                } else {
+//                    [_self sendVideo:(LFVideoFrame *)frame];
+//                }
+                
                 if (!_self.sendVideoHead) {
                     _self.sendVideoHead = YES;
                     if(!((LFVideoFrame*)frame).sps || !((LFVideoFrame*)frame).pps){
@@ -352,7 +364,7 @@ Failed:
 }
 
 - (void)sendVideoHeader:(LFVideoFrame *)videoFrame {
-
+    NSLog(@"wwwwwww sendVideoHeader");
     unsigned char *body = NULL;
     NSInteger iIndex = 0;
     NSInteger rtmpLength = 1024;
@@ -396,6 +408,7 @@ Failed:
 }
 
 - (void)sendVideo:(LFVideoFrame *)frame {
+    NSLog(@"wwwwwww sendVideo");
 
     NSInteger i = 0;
     NSInteger rtmpLength = frame.data.length + 9;

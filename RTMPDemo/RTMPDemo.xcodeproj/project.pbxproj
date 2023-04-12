@@ -754,9 +754,9 @@
 		7C98C42B299F1E730054A4E1 /* capture */ = {
 			isa = PBXGroup;
 			children = (
+				7C98C42E299F1E730054A4E1 /* LFVideoCapture.h */,
 				7C98C42C299F1E730054A4E1 /* LFVideoCapture.m */,
 				7C98C42D299F1E730054A4E1 /* LFAudioCapture.h */,
-				7C98C42E299F1E730054A4E1 /* LFVideoCapture.h */,
 				7C98C42F299F1E730054A4E1 /* LFAudioCapture.m */,
 			);
 			path = capture;
@@ -808,14 +808,14 @@
 			isa = PBXGroup;
 			children = (
 				7C98C44B299F1E730054A4E1 /* LFAudioEncoding.h */,
-				7C98C44C299F1E730054A4E1 /* LFH264VideoEncoder.h */,
+				7C98C45A299F1E730054A4E1 /* LFHardwareAudioEncoder.h */,
 				7C98C44D299F1E730054A4E1 /* LFHardwareAudioEncoder.m */,
+				7C98C44C299F1E730054A4E1 /* LFH264VideoEncoder.h */,
 				7C98C44E299F1E730054A4E1 /* LFH264VideoEncoder.mm */,
 				7C98C44F299F1E730054A4E1 /* H264 */,
 				7C98C458299F1E730054A4E1 /* LFHardwareVideoEncoder.h */,
-				7C98C459299F1E730054A4E1 /* LFVideoEncoding.h */,
-				7C98C45A299F1E730054A4E1 /* LFHardwareAudioEncoder.h */,
 				7C98C45B299F1E730054A4E1 /* LFHardwareVideoEncoder.m */,
+				7C98C459299F1E730054A4E1 /* LFVideoEncoding.h */,
 			);
 			path = coder;
 			sourceTree = "<group>";
@@ -1714,7 +1714,8 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1748,7 +1749,8 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

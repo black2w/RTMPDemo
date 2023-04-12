@@ -9,6 +9,7 @@ def commonPods
 #    pod 'LFLiveKit', :path => '.'
   pod 'IQKeyboardManager'
   pod 'SnapKit'
+  pod 'SVProgressHUD'
 end
 
 

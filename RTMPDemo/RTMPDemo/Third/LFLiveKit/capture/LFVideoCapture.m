@@ -51,6 +51,12 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
         
+        
+        //add by black2w start
+//        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        //add by black2w end
+        
         self.beautyFace = YES;
         self.beautyLevel = 0.5;
         self.brightLevel = 0.5;
@@ -243,7 +249,7 @@
 - (GPUImageView *)gpuImageView{
     if(!_gpuImageView){
         _gpuImageView = [[GPUImageView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        [_gpuImageView setFillMode:kGPUImageFillModePreserveAspectRatioAndFill];
+        [_gpuImageView setFillMode:kGPUImageFillModePreserveAspectRatio];
         [_gpuImageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     }
     return _gpuImageView;
@@ -361,25 +367,91 @@
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 }
 
+//- (void)statusBarChanged:(NSNotification *)notification {
+//    NSLog(@"UIApplicationWillChangeStatusBarOrientationNotification. UserInfo: %@", notification.userInfo);
+//    UIInterfaceOrientation statusBar = [[UIApplication sharedApplication] statusBarOrientation];
+//
+//    if(self.configuration.autorotate){
+//        if (self.configuration.landscape) {
+//            if (statusBar == UIInterfaceOrientationLandscapeLeft) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeRight;
+//            } else if (statusBar == UIInterfaceOrientationLandscapeRight) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeLeft;
+//            }
+//        } else {
+//            if (statusBar == UIInterfaceOrientationPortrait) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortraitUpsideDown;
+//            } else if (statusBar == UIInterfaceOrientationPortraitUpsideDown) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+//            }
+//        }
+//    }
+//}
+
+//add by black2w start
 - (void)statusBarChanged:(NSNotification *)notification {
     NSLog(@"UIApplicationWillChangeStatusBarOrientationNotification. UserInfo: %@", notification.userInfo);
     UIInterfaceOrientation statusBar = [[UIApplication sharedApplication] statusBarOrientation];
 
+    self.configuration.outputImageOrientation = statusBar;
+    [self.configuration refreshVideoSize:statusBar];
+    [self reloadFilter];
+    
     if(self.configuration.autorotate){
-        if (self.configuration.landscape) {
-            if (statusBar == UIInterfaceOrientationLandscapeLeft) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeRight;
-            } else if (statusBar == UIInterfaceOrientationLandscapeRight) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeLeft;
-            }
-        } else {
-            if (statusBar == UIInterfaceOrientationPortrait) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortraitUpsideDown;
-            } else if (statusBar == UIInterfaceOrientationPortraitUpsideDown) {
-                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
-            }
+        if (statusBar == UIInterfaceOrientationLandscapeLeft) {
+            self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeLeft;
+        } else if (statusBar == UIInterfaceOrientationLandscapeRight) {
+            self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeRight;
+        } else if (statusBar == UIInterfaceOrientationPortrait) {
+            self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+        } else if (statusBar == UIInterfaceOrientationPortraitUpsideDown) {
+            self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortraitUpsideDown;
         }
     }
 }
+
+
+- (void) orientationDidChange :(NSNotification *)notification {
+    NSLog(@"wwwwwwww方向变换 UserInfo: %@", notification.userInfo);
+
+    UIDeviceOrientation oriengation = [[UIDevice currentDevice] orientation];
+//    UIInterfaceOrientation oriengation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (oriengation == UIInterfaceOrientationPortrait) {
+        NSLog(@"wwwwwwww方向变换 竖屏");
+    } else if (oriengation == UIInterfaceOrientationLandscapeLeft) {
+        NSLog(@"wwwwwwww方向变换 横屏 左");
+    } else if (oriengation == UIInterfaceOrientationLandscapeRight) {
+        NSLog(@"wwwwwwww方向变换 横屏 右");
+    } else if (oriengation == UIInterfaceOrientationPortraitUpsideDown) {
+        NSLog(@"wwwwwwww方向变换 竖屏 反");
+    }
+    
+    
+    self.configuration.outputImageOrientation = oriengation;
+    [self.configuration refreshVideoSize:oriengation];
+    self.videoCamera.outputImageOrientation = oriengation;
+    [self reloadFilter];
+
+//    if (true) {
+//        if (self.configuration.landscape) {
+//            if (oriengation == UIDeviceOrientationLandscapeLeft) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeRight;
+//            } else if (oriengation == UIDeviceOrientationLandscapeRight) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationLandscapeLeft;
+//            }
+//        } else {
+//            if (oriengation == UIDeviceOrientationPortrait) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortraitUpsideDown;
+//            } else if (oriengation == UIDeviceOrientationPortraitUpsideDown) {
+//                self.videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+//            }
+//        }
+//    }
+}
+
+- (void)setVideoCameraOriengation:(UIInterfaceOrientation)oriengation {
+    self.videoCamera.outputImageOrientation = oriengation;
+}
+//add by black2w end
 
 @end

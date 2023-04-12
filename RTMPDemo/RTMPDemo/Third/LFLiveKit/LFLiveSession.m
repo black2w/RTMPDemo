@@ -86,8 +86,40 @@
         _adaptiveBitrate = NO;
         _captureType = captureType;
     }
+    
+    //add by black2w start
+//    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+    //add by black2w end
+    
     return self;
 }
+
+//add by black2w start
+
+- (void) orientationDidChange :(NSNotification *)notification {
+    NSLog(@"wwwwwwww方向变换 UserInfo: %@", notification.userInfo);
+
+    UIDeviceOrientation oriengation = [[UIDevice currentDevice] orientation];
+//    UIInterfaceOrientation oriengation = [[UIApplication sharedApplication] statusBarOrientation];
+    if (oriengation == UIInterfaceOrientationPortrait) {
+        NSLog(@"wwwwwwww方向变换 竖屏");
+    } else if (oriengation == UIInterfaceOrientationLandscapeLeft) {
+        NSLog(@"wwwwwwww方向变换 横屏 左");
+    } else if (oriengation == UIInterfaceOrientationLandscapeRight) {
+        NSLog(@"wwwwwwww方向变换 横屏 右");
+    } else if (oriengation == UIInterfaceOrientationPortraitUpsideDown) {
+        NSLog(@"wwwwwwww方向变换 竖屏 反");
+    }
+    
+    
+    self.videoConfiguration.outputImageOrientation = oriengation;
+    [self.videoConfiguration refreshVideoSize:oriengation];
+    [self.videoCaptureSource setVideoCameraOriengation:oriengation];
+
+//    [self.videoEncoder resetEncoder];
+}
+//add by black2w end
 
 - (void)dealloc {
     _videoCaptureSource.running = NO;
@@ -145,6 +177,12 @@
     if (self.uploading){
         self.hasCaptureAudio = YES;
         if(self.AVAlignment) [self pushSendBuffer:frame];
+    }
+}
+//add by black2w
+- (void)videoEncoder:(id<LFVideoEncoding>)encoder videoHeaderFrame:(LFVideoFrame *)frame {
+    if (self.uploading){
+        [self.socket sendVideoHeader:frame];
     }
 }
 

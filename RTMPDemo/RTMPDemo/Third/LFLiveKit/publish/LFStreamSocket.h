@@ -31,6 +31,8 @@
 - (void)start;
 - (void)stop;
 - (void)sendFrame:(nullable LFFrame *)frame;
+//add by black2w
+- (void)sendVideoHeader:(nullable LFFrame *)frame;
 - (void)setDelegate:(nullable id <LFStreamSocketDelegate>)delegate;
 @optional
 - (nullable instancetype)initWithStream:(nullable LFLiveStreamInfo *)stream;

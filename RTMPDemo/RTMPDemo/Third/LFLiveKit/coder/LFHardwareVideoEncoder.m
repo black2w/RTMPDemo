@@ -21,7 +21,7 @@
 @property (nonatomic, weak) id<LFVideoEncodingDelegate> h264Delegate;
 @property (nonatomic) NSInteger currentVideoBitRate;
 @property (nonatomic) BOOL isBackGround;
-
+@property (nonatomic) BOOL isChangSize;
 @end
 
 @implementation LFHardwareVideoEncoder
@@ -34,8 +34,11 @@
         [self resetCompressionSession];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterBackground:) name:UIApplicationWillResignActiveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
+
 #ifdef DEBUG
-        enabledWriteVideoFile = NO;
+        enabledWriteVideoFile = true;
         [self initForFilePath];
 #endif
         
@@ -52,6 +55,8 @@
         compressionSession = NULL;
     }
 
+    NSLog(@"wwwwwwwwww  Hardware encoder size %f   %f", _configuration.videoSize.width, _configuration.videoSize.height);
+    
     OSStatus status = VTCompressionSessionCreate(NULL, _configuration.videoSize.width, _configuration.videoSize.height, kCMVideoCodecType_H264, NULL, NULL, NULL, VideoCompressonOutputCallback, (__bridge void *)self, &compressionSession);
     if (status != noErr) {
         return;
@@ -69,8 +74,23 @@
     VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_AllowFrameReordering, kCFBooleanFalse);
     VTSessionSetProperty(compressionSession, kVTCompressionPropertyKey_H264EntropyMode, kVTH264EntropyMode_CABAC);
     VTCompressionSessionPrepareToEncodeFrames(compressionSession);
-
+    
+    _isChangSize = false;
 }
+
+//add by black2w start
+- (void)resetEncoder {
+    NSLog(@"wwwwwwww编码器方向变换");
+    [self resetCompressionSession];
+}
+
+- (void) orientationDidChange :(NSNotification *)notification {
+    NSLog(@"wwwwwwww编码器方向变换 UserInfo: %@", notification.userInfo);
+    _isChangSize = true;
+    [self resetCompressionSession];
+}
+//add by black2w end
+
 
 - (void)setVideoBitRate:(NSInteger)videoBitRate {
     if(_isBackGround) return;
@@ -98,6 +118,8 @@
 #pragma mark -- LFVideoEncoder
 - (void)encodeVideoData:(CVPixelBufferRef)pixelBuffer timeStamp:(uint64_t)timeStamp {
     if(_isBackGround) return;
+    if(_isChangSize) return;
+    
     frameCount++;
     CMTime presentationTimeStamp = CMTimeMake(frameCount, (int32_t)_configuration.videoFrameRate);
     VTEncodeInfoFlags flags;
@@ -106,6 +128,7 @@
     NSDictionary *properties = nil;
     if (frameCount % (int32_t)_configuration.videoMaxKeyframeInterval == 0) {
         properties = @{(__bridge NSString *)kVTEncodeFrameOptionKey_ForceKeyFrame: @YES};
+        NSLog(@"wwwwwww 编码配置帧");
     }
     NSNumber *timeNumber = @(timeStamp);
 
@@ -150,7 +173,7 @@ static void VideoCompressonOutputCallback(void *VTref, void *VTFrameRef, OSStatu
         return;
     }
 
-    if (keyframe && !videoEncoder->sps) {
+    if (keyframe) {
         CMFormatDescriptionRef format = CMSampleBufferGetFormatDescription(sampleBuffer);
 
         size_t sparameterSetSize, sparameterSetCount;
@@ -161,8 +184,24 @@ static void VideoCompressonOutputCallback(void *VTref, void *VTFrameRef, OSStatu
             const uint8_t *pparameterSet;
             OSStatus statusCode = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(format, 1, &pparameterSet, &pparameterSetSize, &pparameterSetCount, 0);
             if (statusCode == noErr) {
+                NSLog(@"wwwwwwww encoder update sps pps ");
                 videoEncoder->sps = [NSData dataWithBytes:sparameterSet length:sparameterSetSize];
                 videoEncoder->pps = [NSData dataWithBytes:pparameterSet length:pparameterSetSize];
+                
+                
+                //add by black2w start
+                LFVideoFrame *videoFrame = [LFVideoFrame new];
+                videoFrame.timestamp = timeStamp;
+                videoFrame.data = [[NSData alloc] init];
+                videoFrame.isKeyFrame = keyframe;
+                videoFrame.sps = videoEncoder->sps;
+                videoFrame.pps = videoEncoder->pps;
+
+                if (videoEncoder.h264Delegate && [videoEncoder.h264Delegate respondsToSelector:@selector(videoEncoder:videoHeaderFrame:)]) {
+                    [videoEncoder.h264Delegate videoEncoder:videoEncoder videoHeaderFrame:videoFrame];
+                }
+
+                //add by black2w end
 
                 if (videoEncoder->enabledWriteVideoFile) {
                     NSMutableData *data = [[NSMutableData alloc] init];
@@ -192,6 +231,7 @@ static void VideoCompressonOutputCallback(void *VTref, void *VTFrameRef, OSStatu
             memcpy(&NALUnitLength, dataPointer + bufferOffset, AVCCHeaderLength);
 
             NALUnitLength = CFSwapInt32BigToHost(NALUnitLength);
+            NSLog(@"wwwwwwww encoder use sps pps ");
 
             LFVideoFrame *videoFrame = [LFVideoFrame new];
             videoFrame.timestamp = timeStamp;

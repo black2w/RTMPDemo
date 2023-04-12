@@ -370,4 +370,39 @@
     return desc;
 }
 
+
+- (void)refreshVideoSize:(UIDeviceOrientation)oriengation {
+    CGSize size = self.videoSize;
+
+    if (oriengation == UIDeviceOrientationLandscapeLeft || oriengation == UIDeviceOrientationLandscapeRight) {
+        CGFloat width = MAX(size.width, size.height);
+        CGFloat height = MIN(size.width, size.height);
+        
+        self.videoSize = CGSizeMake(width, height);
+    } else {
+        CGFloat width = MIN(size.width, size.height);
+        CGFloat height = MAX(size.width, size.height);
+        
+        self.videoSize = CGSizeMake(width, height);
+    }
+    
+    NSLog(@"WWWWWWW refreshVideoSize %f, %f", self.videoSize.width, self.videoSize.height);
+
+    
+    
+//    return;
+//    CGSize size = self.videoSize;
+//    if(self.landscape) {
+//        CGFloat width = MAX(size.width, size.height);
+//        CGFloat height = MIN(size.width, size.height);
+//        self.videoSize = CGSizeMake(width, height);
+//    } else {
+//        CGFloat width = MIN(size.width, size.height);
+//        CGFloat height = MAX(size.width, size.height);
+//        self.videoSize = CGSizeMake(width, height);
+//    }
+//
+//    NSLog(@"WWWWWWW refreshVideoSize %f, %f", size.width, size.height);
+}
+
 @end

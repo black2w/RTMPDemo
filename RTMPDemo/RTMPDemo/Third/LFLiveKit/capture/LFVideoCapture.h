@@ -81,4 +81,5 @@
  */
 - (nullable instancetype)initWithVideoConfiguration:(nullable LFLiveVideoConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 
+- (void)setVideoCameraOriengation:(UIInterfaceOrientation)oriengation;
 @end
